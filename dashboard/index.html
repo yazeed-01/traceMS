@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TraceMS – Pipeline Dashboard</title>
+  <link rel="stylesheet" href="/static/dashboard.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app">
+    <header class="header">
+      <h1>TraceMS</h1>
+      <p class="tagline">Pipeline dashboard · track any number of microservices · text, JSON, images, video, files</p>
+    </header>
+
+    <section class="config-section">
+      <h2 class="config-toggle" id="config-toggle">Configure microservices <span class="toggle-icon">▼</span></h2>
+      <div class="config-panel" id="config-panel" hidden>
+        <p class="config-hint">Each microservice has a <strong>URL</strong> (e.g. <code>http://localhost:8001</code> or <code>validator:8001</code>) and optional <strong>input/output types</strong> (text, json, image, video, binary, any). Order = execution order.</p>
+        <div class="config-actions">
+          <button type="button" id="add-service-btn" class="btn-secondary">+ Add microservice</button>
+          <button type="button" id="save-pipeline-btn" class="btn-primary">Save pipeline</button>
+        </div>
+        <div id="config-error" class="error" hidden></div>
+        <div id="config-success" class="success" hidden></div>
+        <div class="services-editor" id="services-editor"></div>
+      </div>
+    </section>
+
+    <section class="input-section">
+      <form id="process-form" class="process-form">
+        <label>Input type</label>
+        <div class="input-type-tabs">
+          <label class="tab"><input type="radio" name="inputType" value="text" checked> Text</label>
+          <label class="tab"><input type="radio" name="inputType" value="json"> JSON</label>
+          <label class="tab"><input type="radio" name="inputType" value="image"> Image</label>
+          <label class="tab"><input type="radio" name="inputType" value="video"> Video</label>
+          <label class="tab"><input type="radio" name="inputType" value="file"> File</label>
+        </div>
+        <div id="input-text-area" class="input-area">
+          <label for="text">Enter text</label>
+          <textarea id="text" name="text" rows="3" placeholder="e.g. hello world"></textarea>
+        </div>
+        <div id="input-file-area" class="input-area" hidden>
+          <label for="file">Choose file</label>
+          <input type="file" id="file" name="file" accept="*">
+          <span class="file-hint" id="file-hint"></span>
+        </div>
+        <div class="input-row">
+          <button type="submit" id="submit-btn" class="btn-process">
+            <span class="btn-text">Run pipeline</span>
+            <span class="btn-icon">▶</span>
+          </button>
+        </div>
+        <div id="process-error" class="error" hidden></div>
+      </form>
+      <div id="trace-info" class="trace-info" hidden>
+        <span class="trace-label">Trace ID</span>
+        <code id="trace-id"></code>
+        <a id="jaeger-link" href="#" target="_blank" rel="noopener" class="jaeger-link">View in Jaeger</a>
+      </div>
+    </section>
+
+    <section class="pipeline-section">
+      <div class="pipeline-head">
+        <h2 class="pipeline-title">Pipeline</h2>
+        <button type="button" id="expand-btn" class="btn-expand" title="Open full canvas (pan, zoom)">Expand</button>
+      </div>
+      <div class="track" id="track">
+        <div class="train" id="train" aria-hidden="true"></div>
+        <svg class="rail-svg" id="rail-svg" aria-hidden="true"><path id="rail-path" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        <div class="stations" id="stations">
+          <div class="station-loading" id="stations-loading">Loading pipeline…</div>
+        </div>
+      </div>
+    </section>
+
+    <div id="expand-overlay" class="expand-overlay" hidden aria-hidden="true" tabindex="-1">
+      <div class="expand-toolbar">
+        <span class="expand-hint">Drag to pan · Scroll to zoom · ↑↓←→ move · +/− zoom · Esc close</span>
+        <button type="button" id="expand-close-btn" class="btn-expand-close" title="Close">Collapse</button>
+      </div>
+      <div class="expand-board" id="expand-board">
+        <div class="expand-viewport" id="expand-viewport">
+          <div class="expand-track" id="expand-track">
+            <svg class="expand-rail-svg" id="expand-rail-svg"><path id="expand-rail-path" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+            <div class="expand-stations" id="expand-stations"></div>
+            <div class="expand-train" id="expand-train" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <section class="result-section" id="result-section" hidden>
+      <h2>Result</h2>
+      <div id="result-body" class="result-body"></div>
+    </section>
+  </div>
+  <script src="/static/dashboard.js"></script>
+</body>
+</html>

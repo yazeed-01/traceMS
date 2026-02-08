@@ -1,0 +1,76 @@
+services:
+  # Jaeger all-in-one: UI 16686, collector HTTP 14268 (Thrift), OTLP 4317/4318. See https://www.jaegertracing.io/docs/2.15/architecture/
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    ports:
+      - "16686:16686"   # Jaeger UI
+      - "14268:14268"   # Collector HTTP (Thrift) - used by Jaeger Thrift exporter
+      - "4317:4317"     # OTLP gRPC
+      - "4318:4318"     # OTLP HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+
+  gateway:
+    build:
+      context: .
+      dockerfile: gateway/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - OTEL_SERVICE_NAME=gateway
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318
+      - VALIDATOR_URL=http://validator:8001
+    depends_on:
+      - validator
+
+  validator:
+    build:
+      context: .
+      dockerfile: microservices/validator/Dockerfile
+    ports:
+      - "8001:8001"
+    environment:
+      - JAEGER_COLLECTOR_ENDPOINT=http://jaeger:14268/api/traces
+      - OTEL_SERVICE_NAME=validator
+      - STEP_DELAY_SECONDS=2
+    depends_on:
+      - transformer
+
+  transformer:
+    build:
+      context: .
+      dockerfile: microservices/transformer/Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      - JAEGER_COLLECTOR_ENDPOINT=http://jaeger:14268/api/traces
+      - OTEL_SERVICE_NAME=transformer
+      - STEP_DELAY_SECONDS=2
+    depends_on:
+      - enricher
+
+  enricher:
+    build:
+      context: .
+      dockerfile: microservices/enricher/Dockerfile
+    ports:
+      - "8003:8003"
+    environment:
+      - JAEGER_COLLECTOR_ENDPOINT=http://jaeger:14268/api/traces
+      - OTEL_SERVICE_NAME=enricher
+      - STEP_DELAY_SECONDS=2
+    depends_on:
+      - persister
+
+  persister:
+    build:
+      context: .
+      dockerfile: microservices/persister/Dockerfile
+    ports:
+      - "8004:8004"
+    environment:
+      - JAEGER_COLLECTOR_ENDPOINT=http://jaeger:14268/api/traces
+      - OTEL_SERVICE_NAME=persister
+      - STEP_DELAY_SECONDS=2
+    depends_on:
+      - jaeger

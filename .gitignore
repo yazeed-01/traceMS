@@ -1,0 +1,17 @@
+.env
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.eggs/
+dist/
+build/
+
+# Frontend
+frontend/dist/
+frontend/node_modules/
+
+# Go gateway (binary; gateway/static/ placeholder is committed so go build works)
+gateway/gateway
+*.exe
